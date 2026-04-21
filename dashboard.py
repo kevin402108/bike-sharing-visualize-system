@@ -166,21 +166,52 @@ st.pyplot(fig)
 #### 可视化：工作日使用模式
 st.subheader('工作日使用模式')
 
-mask1 = ((main2_df['workingday'] == 0) | (main2_df['holiday'] == 1))
-df1 = main2_df[mask1]
-mask2 = ((main2_df['workingday'] == 1) & (main2_df['holiday'] == 0))
-df2 = main2_df[mask2]
+# 创建两行的图表布局
+fig, axes = plt.subplots(2, 5, figsize=(20, 10))
 
-plot_weekday = sns.FacetGrid(hour_df, col='weekday', hue='workingday', col_wrap=2, height=5, sharex=False)
-plot_weekday.map(sns.lineplot, "hour", "total")
-plot_weekday.fig.suptitle('自行车租赁模式按工作日分布', y=1.02, fontsize=20)
-plot_weekday.set_axis_labels('小时', '租赁总数')
-plot_weekday.add_legend()
+# 设置第一行（星期一到星期五）
+weekdays = ['星期一', '星期二', '星期三', '星期四', '星期五']
+for i, weekday in enumerate(weekdays):
+    # 筛选对应星期的数据
+    weekday_data = main2_df[main2_df['weekday'] == weekday]
+    
+    # 绘制工作日和非工作日的租赁模式
+    sns.lineplot(data=weekday_data, x="hour", y="total", ax=axes[0, i], hue="workingday")
+    
+    # 设置标题和标签
+    axes[0, i].set_title(f'{weekday}', fontsize=14)
+    axes[0, i].set_xlabel('小时')
+    axes[0, i].set_ylabel('租赁总数')
+    axes[0, i].grid(False)
+    axes[0, i].set_xlim(0, 23)  # 确保x轴范围是0-23小时
+    
+    # 自定义图例
+    handles, labels = axes[0, i].get_legend_handles_labels()
+    axes[0, i].legend(handles=handles, labels=['非工作日', '工作日'], loc='upper right')
 
-for ax in plot_weekday.axes.flat:
-    ax.set(xlabel="小时")
-plot_weekday.set_titles(size=10)
+# 设置第二行（星期六和星期日）
+weekends = ['星期六', '星期日']
+for i, weekend in enumerate(weekends):
+    # 筛选对应周末的数据
+    weekend_data = main2_df[main2_df['weekday'] == weekend]
+    
+    # 绘制工作日和非工作日的租赁模式
+    sns.lineplot(data=weekend_data, x="hour", y="total", ax=axes[1, i], hue="workingday")
+    
+    # 设置标题和标签
+    axes[1, i].set_title(f'{weekend}', fontsize=14)
+    axes[1, i].set_xlabel('小时')
+    axes[1, i].set_ylabel('租赁总数')
+    axes[1, i].grid(False)
+    axes[1, i].set_xlim(0, 23)  # 确保x轴范围是0-23小时
+    
+    # 自定义图例
+    handles, labels = axes[1, i].get_legend_handles_labels()
+    axes[1, i].legend(handles=handles, labels=['非工作日', '工作日'], loc='upper right')
 
-plt.subplots_adjust(wspace=0.3, hspace=0.3)
+# 隐藏多余的子图
+for i in range(2, 5):
+    axes[1, i].set_visible(False)
 
-st.pyplot(plot_weekday)
+plt.tight_layout()
+st.pyplot(fig)
